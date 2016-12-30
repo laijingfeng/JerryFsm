@@ -2,7 +2,7 @@
 
 namespace Jerry
 {
-    public class Fsm
+    public abstract class Fsm
     {
         private List<State> m_States;
 

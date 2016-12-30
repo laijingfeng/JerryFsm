@@ -1,7 +1,7 @@
 ﻿
 namespace Jerry
 {
-    public class Action
+    public abstract class Action
     {
         private State m_State;
         /// <summary>
