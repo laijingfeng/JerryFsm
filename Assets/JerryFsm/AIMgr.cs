@@ -1,63 +1,80 @@
 ﻿using UnityEngine;
 
-//version: 2016-12-28-02
+//version: 2016-12-30-00
 namespace Jerry
 {
     public abstract class AIMgr : MonoBehaviour
     {
         protected Fsm CurFsm;
 
-        public virtual void Start()
+        void Start()
         {
             MakeFsm();
             if (CurFsm != null)
             {
                 CurFsm.SetMgr(this);
             }
+            OnStart();
         }
+
+        void Update()
+        {
+            OnUpdate();
+            if (CurFsm != null)
+            {
+                CurFsm.Fsm_Update();
+            }
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            OnDrawSelected();
+            if (CurFsm != null)
+            {
+                CurFsm.Fsm_DrawSelected();
+            }
+        }
+
+        void OnDrawGizmos()
+        {
+            OnDraw();
+            if (CurFsm != null)
+            {
+                CurFsm.Fsm_Draw();
+            }
+        }
+
+        public virtual void OnStart() { }
+        public virtual void OnUpdate() { }
+        public virtual void OnDraw() { }
+        public virtual void OnDrawSelected() { }
 
         public void StartFsm()
         {
             if (CurFsm != null)
             {
-                CurFsm.Start();
+                CurFsm.Fsm_Start();
             }
         }
 
-        public void StopFsm()
+        public void ResumeFsm()
         {
             if (CurFsm != null)
             {
-                CurFsm.Stop();
+                CurFsm.Resume();
+            }
+        }
+
+        public void PauseFsm()
+        {
+            if (CurFsm != null)
+            {
+                CurFsm.Pause();
             }
         }
 
         public abstract void MakeFsm();
         
-        public virtual void Update()
-        {
-            if (CurFsm != null)
-            {
-                CurFsm.Update();
-            }
-        }
-
-        public virtual void OnDrawGizmosSelected()
-        {
-            if (CurFsm != null)
-            {
-                CurFsm.DrawSelected();
-            }
-        }
-
-        public virtual void OnDrawGizmos()
-        {
-            if (CurFsm != null)
-            {
-                CurFsm.Draw();
-            }
-        }
-
         #region Graph
 
         public string GetNode()

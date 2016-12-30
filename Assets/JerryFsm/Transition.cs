@@ -9,13 +9,17 @@ namespace Jerry
         /// <summary>
         /// 判条件的时候要用到state的信息
         /// </summary>
-        private State m_CurState;
+        private State m_State;
 
-        protected State CurState { get { return m_CurState; } }
+        protected State MyState { get { return m_State; } }
 
+        /// <summary>
+        /// 内部调用
+        /// </summary>
+        /// <param name="s"></param>
         public void SetState(State s)
         {
-            m_CurState = s;
+            m_State = s;
         }
 
         private int m_NextID;

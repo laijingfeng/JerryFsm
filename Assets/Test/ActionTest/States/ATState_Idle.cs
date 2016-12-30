@@ -5,15 +5,15 @@ public class ATState_Idle : State
 {
     public ATState_Idle(int id) : base(id){}
 
-    public override void Enter()
+    public override void OnEnter()
     {
-        base.Enter();
+        base.OnEnter();
         Debug.Log("ATState_Idle Enter");
     }
 
-    public override void Exit()
+    public override void OnExit()
     {
-        base.Exit();
+        base.OnExit();
         Debug.Log("ATState_Idle Exit");
     }
 }

@@ -4,49 +4,88 @@ namespace Jerry
     public class Action
     {
         private State m_State;
+        /// <summary>
+        /// State
+        /// </summary>
         public State MyState { get { return m_State; } }
 
         private bool m_Started;
+        /// <summary>
+        /// 是否已经开始，内部调用
+        /// </summary>
         public bool Started { get { return m_Started; } }
 
         private bool m_Finished;
+        /// <summary>
+        /// 是否已经结束，内部调用
+        /// </summary>
         public bool Finished { get { return m_Finished; } }
-        
+
+        /// <summary>
+        /// 设置State，内部调用
+        /// </summary>
+        /// <param name="state"></param>
         public void SetState(State state)
         {
             m_State = state;
-            Reset();
+            m_Finished = false;
+            m_Started = false;
         }
 
-        public virtual void Reset()
+        /// <summary>
+        /// 重置，内部调用
+        /// </summary>
+        public void Action_Reset()
         {
             m_Finished = false;
             m_Started = false;
         }
 
-        public virtual void Enter()
+        /// <summary>
+        /// 进入，内部调用
+        /// </summary>
+        public void Action_Enter()
         {
             m_Started = true;
+            OnEnter();
         }
 
-        public virtual void Update()
+        /// <summary>
+        /// 更新，内部调用
+        /// </summary>
+        public void Action_Update()
         {
-            if (m_State == null
+            if (MyState == null
                 || m_Started == false
                 || m_Finished == true)
             {
                 return;
             }
+            OnUpdate();
         }
 
-        public virtual void Exit()
-        {
-        }
+        /// <summary>
+        /// 进入，准备数据
+        /// </summary>
+        public virtual void OnEnter() { }
 
-        public virtual void Finish()
+        /// <summary>
+        /// <para>更新</para>
+        /// </summary>
+        public virtual void OnUpdate() { }
+
+        /// <summary>
+        /// 退出时，做清理
+        /// </summary>
+        public virtual void OnExit() { }
+
+        /// <summary>
+        /// 结束Action
+        /// </summary>
+        public void Finish()
         {
             m_Finished = true;
-            Exit();
+            OnExit();
         }
 
         #region Graph

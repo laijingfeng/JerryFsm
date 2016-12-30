@@ -6,9 +6,9 @@ public class MonsterAIMgr_Idle : AIMgr
     public Transform[] path;
     public Transform player;
 
-    public override void Start()
+    public override void OnStart()
     {
-        base.Start();
+        base.OnStart();
 
         StartFsm();
     }

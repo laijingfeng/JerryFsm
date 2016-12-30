@@ -13,9 +13,9 @@ public class MonsterState_RunWay : State
         curIdx = 0;
     }
 
-    public override void Update()
+    public override void OnUpdate()
     {
-        base.Update();
+        base.OnUpdate();
 
         if (path == null || path.Length <= 0)
         {

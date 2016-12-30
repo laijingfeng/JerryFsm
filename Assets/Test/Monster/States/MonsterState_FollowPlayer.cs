@@ -5,9 +5,9 @@ public class MonsterState_FollowPlayer : State
 {
     public MonsterState_FollowPlayer(int id) : base(id) { }
 
-    public override void Update()
+    public override void OnUpdate()
     {
-        base.Update();
+        base.OnUpdate();
 
         MonsterFsm fsm = MyFsm as MonsterFsm;
 

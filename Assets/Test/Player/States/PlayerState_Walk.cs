@@ -10,23 +10,23 @@ public class PlayerState_Walk : State
 
     public PlayerState_Walk(int id) : base(id) { }
 
-    public override void Enter()
+    public override void OnEnter()
     {
-        base.Enter();
+        base.OnEnter();
         frame = 0;
     }
 
-    public override void Draw()
+    public override void OnDraw()
     {
-        base.Draw();
+        base.OnDraw();
 #if UNITY_EDITOR
         Handles.Label(MyFsm.MyAIMgr.transform.position, "Walk");
 #endif
     }
 
-    public override void Update()
+    public override void OnUpdate()
     {
-        base.Update();
+        base.OnUpdate();
 
         frame++;
 

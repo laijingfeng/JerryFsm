@@ -5,22 +5,22 @@ public class PlayerAIMgr_Move : AIMgr
 {
     public Transform[] path;
 
-    public override void Start()
+    public override void OnStart()
     {
-        base.Start();
+        base.OnStart();
 
         StartFsm();
     }
 
-    public override void Update()
+    public override void OnUpdate()
     {
-        base.Update();
+        base.OnUpdate();
 
         if (Input.GetKeyDown(KeyCode.M))
         {
             if (CurFsm.Running)
             {
-                StopFsm();
+                PauseFsm();
             }
             else
             {

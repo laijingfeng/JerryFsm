@@ -8,16 +8,16 @@ public class MonsterState_Idle : State
 
     private Task _task;
 
-    public override void Enter()
+    public override void OnEnter()
     {
-        base.Enter();
+        base.OnEnter();
         //Debug.LogWarning("Enter");
         _task = new Task(this.IE_Idle());
     }
 
-    public override void Exit()
+    public override void OnExit()
     {
-        base.Exit();
+        base.OnExit();
         if (_task != null)
         {
             _task.Stop();

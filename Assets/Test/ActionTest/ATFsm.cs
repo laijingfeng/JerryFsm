@@ -1,13 +1,10 @@
-﻿using UnityEngine;
-using Jerry;
+﻿using Jerry;
 
-public class ATFsm : Fsm
+public class ATFsm : Fsm 
 {
-
-}
-
-public enum ATStateID
-{
-    Idle = 0,
-    Idle1 = 1,
+    public enum StateID
+    {
+        Idle = 0,
+        Idle1 = 1,
+    }
 }

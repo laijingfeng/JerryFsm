@@ -8,14 +8,31 @@ namespace Jerry
         private List<Action> m_Actions;
         private bool m_SequnceAction;
 
+        private bool m_Running;
+        /// <summary>
+        /// 运行中，内部调用
+        /// </summary>
+        public bool Running { get { return m_Running; } }
+
         private Fsm m_Fsm;
+        /// <summary>
+        /// Fsm
+        /// </summary>
         public Fsm MyFsm { get { return m_Fsm; } }
 
+        /// <summary>
+        /// 设置Action是否是序列Action
+        /// </summary>
+        /// <param name="sequnce"></param>
         public void SetSequnceAction(bool sequnce)
         {
             m_SequnceAction = sequnce;
         }
 
+        /// <summary>
+        /// 设置Fsm，内部调用
+        /// </summary>
+        /// <param name="fsm"></param>
         public void SetFsm(Fsm fsm)
         {
             m_Fsm = fsm;
@@ -27,61 +44,59 @@ namespace Jerry
             m_Transitions = new List<Transition>();
             m_Actions = new List<Action>();
             m_SequnceAction = false;
+            m_Running = false;
         }
 
         private int m_ID;
+        /// <summary>
+        /// ID
+        /// </summary>
         public int ID { get { return m_ID; } }
 
         /// <summary>
-        /// base.Enter()需要执行
+        /// 进入，内部调用
         /// </summary>
-        public virtual void Enter()
+        public void State_Enter()
         {
+            m_Running = true;
+            OnEnter();
+
             foreach (Action ac in m_Actions)
             {
-                if (ac.Started)
-                {
-                    ac.Reset();
-                }
+                ac.Action_Reset();
             }
 
             if (m_SequnceAction == false)
             {
                 foreach (Action ac in m_Actions)
                 {
-                    if (ac.Started)
+                    if (ac.Started == false)
                     {
-                        ac.Enter();
+                        ac.Action_Enter();
                     }
                 }
             }
         }
 
         /// <summary>
-        /// 有Action还在执行，进行了更新
+        /// 更新，内部调用
         /// </summary>
-        private bool m_HaveActionUpdate = false;
-
-        /// <summary>
-        /// base.Update()需要执行
-        /// </summary>
-        public virtual void Update()
+        public void State_Update()
         {
-            if (m_Fsm == null)
-            {
-                return;
-            }
+            if (m_Fsm == null) { return; }
 
-            m_HaveActionUpdate = false;
+            if (!m_Running) { return; }
+            OnUpdate();
 
             if (m_SequnceAction == false)
             {
                 foreach (Action ac in m_Actions)
                 {
+                    if (!m_Running) { return; }
+
                     if (ac.Finished == false)
                     {
-                        ac.Update();
-                        m_HaveActionUpdate = true;
+                        ac.Action_Update();
                     }
                 }
             }
@@ -89,29 +104,26 @@ namespace Jerry
             {
                 foreach (Action ac in m_Actions)
                 {
+                    if (!m_Running) { return; }
                     if (ac.Finished == false)
                     {
                         if (ac.Started == false)
                         {
-                            ac.Enter();
+                            ac.Action_Enter();
                         }
                         else
                         {
-                            ac.Update();
+                            ac.Action_Update();
                         }
-                        m_HaveActionUpdate = true;
                         break;
                     }
                 }
             }
 
-            if (m_HaveActionUpdate)
-            {
-                return;
-            }
-
             foreach (Transition tr in m_Transitions)
             {
+                if (!m_Running) { return; }
+
                 if (tr != null && tr.Check())
                 {
                     m_Fsm.ChangeState(tr.NextID);
@@ -120,8 +132,9 @@ namespace Jerry
             }
         }
 
-        public virtual void Exit()
+        public void State_Exit()
         {
+            m_Running = false;
             foreach (Action ac in m_Actions)
             {
                 if (ac.Started == true && ac.Finished == false)
@@ -129,7 +142,25 @@ namespace Jerry
                     ac.Finish();
                 }
             }
+            OnExit();
         }
+
+        /// <summary>
+        /// 进入
+        /// </summary>
+        public virtual void OnEnter() { }
+
+        /// <summary>
+        /// <para>更新</para>
+        /// </summary>
+        public virtual void OnUpdate() { }
+
+        /// <summary>
+        /// 退出时
+        /// </summary>
+        public virtual void OnExit() { }
+        public virtual void OnDraw() { }
+        public virtual void OnDrawSelected() { }
 
         public void AddAction(Action a)
         {
@@ -159,12 +190,14 @@ namespace Jerry
             }
         }
 
-        public virtual void Draw()
+        public void State_Draw()
         {
+            OnDraw();
         }
 
-        public virtual void DrawSelected()
+        public void State_DrawSelected()
         {
+            OnDrawSelected();
         }
 
         #region Graph

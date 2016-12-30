@@ -3,24 +3,27 @@ using Jerry;
 
 public class ATAction_Input : Action
 {
-    public override void Enter()
+    public override void OnEnter()
     {
-        base.Enter();
+        base.OnEnter();
         Debug.Log("ATAction_Input Enter");
     }
 
-    public override void Update()
+    public override void OnUpdate()
     {
-        base.Update();
+        base.OnUpdate();
+
         if (Input.GetKeyDown(KeyCode.M))
         {
-            Finish();
+            Debug.Log("ATAction_Input Tri");
+            MyState.MyFsm.ChangeState(ATFsm.StateID.Idle1.GetHashCode());
+            //Finish();
         }
     }
 
-    public override void Exit()
+    public override void OnExit()
     {
-        base.Exit();
+        base.OnExit();
         Debug.Log("ATAction_Input Exit");
     }
 }

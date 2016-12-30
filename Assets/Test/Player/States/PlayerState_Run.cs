@@ -7,15 +7,15 @@ public class PlayerState_Run : State
 
     public PlayerState_Run(int id) : base(id) { }
 
-    public override void Enter()
+    public override void OnEnter()
     {
-        base.Enter();
+        base.OnEnter();
         frame = 0;
     }
 
-    public override void Update()
+    public override void OnUpdate()
     {
-        base.Update();
+        base.OnUpdate();
         
         frame++;
 

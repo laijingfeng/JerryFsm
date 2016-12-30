@@ -22,7 +22,7 @@ namespace Jerry
         public bool m_DoDrawSelected;
 
         /// <summary>
-        /// System Use
+        /// 设置Mgr，内部调用
         /// </summary>
         /// <param name="aiMgr"></param>
         public void SetMgr(AIMgr aiMgr)
@@ -39,36 +39,56 @@ namespace Jerry
             m_States = new List<State>();
         }
 
-        public void Start()
+        /// <summary>
+        /// 内部调用
+        /// </summary>
+        public void Fsm_Start()
         {
             if (m_CurState == null)
             {
                 if (m_States.Count > 0)
                 {
                     m_CurState = m_States[0];
-                    m_CurState.Enter();
+                    m_CurState.State_Enter();
                 }
             }
             m_Running = true;
+            OnStart();
         }
 
-        public void Stop()
+        public void Resume()
+        {
+            m_Running = true;
+            OnResume();
+        }
+
+        public void Pause()
         {
             m_Running = false;
+            OnPause();
         }
 
-        public void Update()
+        /// <summary>
+        /// 更新，内部调用
+        /// </summary>
+        public void Fsm_Update()
         {
-            if (m_Running == false)
-            {
-                return;
-            }
+            if (m_Running == false) { return; }
+
+            OnUpdate();
 
             if (m_CurState != null)
             {
-                m_CurState.Update();
+                m_CurState.State_Update();
             }
         }
+
+        public virtual void OnResume() { }
+        public virtual void OnPause() { }
+        public virtual void OnStart() { }
+        public virtual void OnUpdate() { }
+        public virtual void OnDraw() { }
+        public virtual void OnDrawSelected() { }
 
         public void AddState(State state)
         {
@@ -95,36 +115,41 @@ namespace Jerry
             {
                 if (state.ID == stateID)
                 {
-                    m_CurState.Exit();
+                    //加if是为了防止在OnExit使用跳转导致死循环
+                    if (m_CurState.Running)
+                    {
+                        m_CurState.State_Exit();
+                    }
                     m_CurState = state;
-                    m_CurState.Enter();
+                    m_CurState.State_Enter();
                     break;
                 }
             }
         }
 
-        public virtual void DrawSelected()
+        public void Fsm_DrawSelected()
         {
             if (m_DoDrawSelected == false)
             {
                 return;
             }
+            OnDrawSelected();
             if (m_CurState != null)
             {
-                m_CurState.DrawSelected();
+                m_CurState.State_DrawSelected();
             }
         }
 
-        public virtual void Draw()
+        public void Fsm_Draw()
         {
             if (m_DoDraw == false)
             {
                 return;
             }
-
+            OnDraw();
             if (m_CurState != null)
             {
-                m_CurState.Draw();
+                m_CurState.State_Draw();
             }
         }
 
