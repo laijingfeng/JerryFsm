@@ -20,6 +20,19 @@ namespace Jerry
         /// </summary>
         public Fsm MyFsm { get { return m_Fsm; } }
 
+        private AIMgr m_AIMgr;
+        public AIMgr MyAIMgr
+        {
+            get
+            {
+                if (m_AIMgr == null && MyFsm != null)
+                {
+                    m_AIMgr = MyFsm.MyAIMgr;
+                }
+                return m_AIMgr;
+            }
+        }
+
         /// <summary>
         /// 设置Action是否是序列Action
         /// </summary>

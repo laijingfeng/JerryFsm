@@ -16,7 +16,7 @@ public class ATAction_Input : Action
         if (Input.GetKeyDown(KeyCode.S))
         {
             Debug.Log("ATAction_Input Tri");
-            MyState.MyFsm.ChangeState(ATFsm.StateID.Idle1.GetHashCode());
+            MyFsm.ChangeState(ATFsm.StateID.Idle1.GetHashCode());
             //Finish();
         }
     }

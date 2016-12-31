@@ -26,13 +26,13 @@ public class PlayerState_Run : State
             return;
         }
 
-        Vector3 moveDir = fsm.path[fsm.curIdx].position - fsm.MyAIMgr.transform.position;
+        Vector3 moveDir = fsm.path[fsm.curIdx].position - MyAIMgr.transform.position;
         if (moveDir.magnitude < 0.1f)
         {
             fsm.curIdx = (fsm.curIdx + 1) % fsm.path.Length;
-            moveDir = fsm.path[fsm.curIdx].position - fsm.MyAIMgr.transform.position;
+            moveDir = fsm.path[fsm.curIdx].position - MyAIMgr.transform.position;
         }
-        fsm.MyAIMgr.transform.rotation = Quaternion.LookRotation(moveDir);
-        fsm.MyAIMgr.transform.position = fsm.MyAIMgr.transform.position + fsm.MyAIMgr.transform.forward * 0.03f;
+        MyAIMgr.transform.rotation = Quaternion.LookRotation(moveDir);
+        MyAIMgr.transform.position = MyAIMgr.transform.position + MyAIMgr.transform.forward * 0.03f;
     }
 }

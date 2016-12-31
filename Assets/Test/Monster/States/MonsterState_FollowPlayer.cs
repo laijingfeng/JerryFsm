@@ -21,12 +21,12 @@ public class MonsterState_FollowPlayer : State
         
         MonsterFsm fsm = MyFsm as MonsterFsm;
 
-        Vector3 moveDir = fsm.Player.position - fsm.MyAIMgr.transform.position;
+        Vector3 moveDir = fsm.Player.position - MyAIMgr.transform.position;
         if (moveDir.magnitude < 0.1f)
         {
             return;
         }
-        fsm.MyAIMgr.transform.rotation = Quaternion.LookRotation(moveDir);
-        fsm.MyAIMgr.transform.position = fsm.MyAIMgr.transform.position + fsm.MyAIMgr.transform.forward * 0.01f;
+        MyAIMgr.transform.rotation = Quaternion.LookRotation(moveDir);
+        MyAIMgr.transform.position = MyAIMgr.transform.position + MyAIMgr.transform.forward * 0.01f;
     }
 }

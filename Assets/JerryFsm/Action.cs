@@ -9,6 +9,32 @@ namespace Jerry
         /// </summary>
         public State MyState { get { return m_State; } }
 
+        private Fsm m_Fsm;
+        public Fsm MyFsm
+        {
+            get
+            {
+                if (m_Fsm == null && MyState != null)
+                {
+                    m_Fsm = MyState.MyFsm;
+                }
+                return m_Fsm;
+            }
+        }
+
+        private AIMgr m_AIMgr;
+        public AIMgr MyAIMgr
+        {
+            get
+            {
+                if (m_AIMgr == null && MyFsm != null)
+                {
+                    m_AIMgr = MyFsm.MyAIMgr;
+                }
+                return m_AIMgr;
+            }
+        }
+
         private bool m_Started;
         /// <summary>
         /// 是否已经开始，内部调用

@@ -32,15 +32,13 @@ public class MonsterState_RunWay : State
             return;
         }
 
-        MonsterFsm mgr = MyFsm as MonsterFsm;
-
-        Vector3 moveDir = path[curIdx].position - mgr.MyAIMgr.transform.position;
+        Vector3 moveDir = path[curIdx].position - MyAIMgr.transform.position;
         if (moveDir.magnitude < 0.1f)
         {
             curIdx = (curIdx + 1) % path.Length;
-            moveDir = path[curIdx].position - mgr.MyAIMgr.transform.position;
+            moveDir = path[curIdx].position - MyAIMgr.transform.position;
         }
-        mgr.MyAIMgr.transform.rotation = Quaternion.LookRotation(moveDir);
-        mgr.MyAIMgr.transform.position = mgr.MyAIMgr.transform.position + mgr.MyAIMgr.transform.forward * 0.01f;
+        MyAIMgr.transform.rotation = Quaternion.LookRotation(moveDir);
+        MyAIMgr.transform.position = MyAIMgr.transform.position + MyAIMgr.transform.forward * 0.01f;
     }
 }
