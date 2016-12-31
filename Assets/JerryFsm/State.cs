@@ -14,11 +14,23 @@ namespace Jerry
         /// </summary>
         public bool Running { get { return m_Running; } }
 
+        private SubFsm m_SubFsm;
+
         private Fsm m_Fsm;
         /// <summary>
         /// Fsm
         /// </summary>
-        public Fsm MyFsm { get { return m_Fsm; } }
+        public Fsm MyFsm
+        {
+            get
+            {
+                if (m_Fsm == null && m_SubFsm != null)
+                {
+                    m_Fsm = m_SubFsm.MyFsm;
+                }
+                return m_Fsm;
+            }
+        }
 
         private AIMgr m_AIMgr;
         public AIMgr MyAIMgr
@@ -49,6 +61,15 @@ namespace Jerry
         public void SetFsm(Fsm fsm)
         {
             m_Fsm = fsm;
+        }
+
+        /// <summary>
+        /// 设置SubFsm，内部调用
+        /// </summary>
+        /// <param name="subFsm"></param>
+        public void SetSubFsm(SubFsm subFsm)
+        {
+            m_SubFsm = subFsm;
         }
 
         public State(int id)
@@ -96,7 +117,7 @@ namespace Jerry
         /// </summary>
         public void State_Update()
         {
-            if (m_Fsm == null) { return; }
+            if (MyFsm == null) { return; }
 
             if (!m_Running) { return; }
             OnUpdate();
@@ -139,12 +160,15 @@ namespace Jerry
 
                 if (tr != null && tr.Check())
                 {
-                    m_Fsm.ChangeState(tr.NextID);
+                    MyFsm.ChangeState(tr.NextID);
                     return;
                 }
             }
         }
 
+        /// <summary>
+        /// 退出，内部调用
+        /// </summary>
         public void State_Exit()
         {
             m_Running = false;
@@ -162,12 +186,10 @@ namespace Jerry
         /// 进入
         /// </summary>
         public virtual void OnEnter() { }
-
         /// <summary>
         /// <para>更新</para>
         /// </summary>
         public virtual void OnUpdate() { }
-
         /// <summary>
         /// 退出时
         /// </summary>

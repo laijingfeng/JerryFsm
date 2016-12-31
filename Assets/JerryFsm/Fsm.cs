@@ -5,6 +5,10 @@ namespace Jerry
     public abstract class Fsm
     {
         private List<State> m_States;
+        private List<SubFsm> m_SubFsms;
+
+        private SubFsm m_CurSubFsm;
+        protected SubFsm CurSubFsm { get { return m_CurSubFsm; } }
 
         private State m_CurState;
         protected State CurState { get { return m_CurState; } }
@@ -36,7 +40,9 @@ namespace Jerry
             m_DoDraw = false;
             m_DoDrawSelected = false;
             m_CurState = null;
+            m_CurSubFsm = null;
             m_States = new List<State>();
+            m_SubFsms = new List<SubFsm>();
         }
 
         /// <summary>
@@ -79,7 +85,14 @@ namespace Jerry
 
             if (m_CurState != null)
             {
+                if (m_Running == false) { return; }
                 m_CurState.State_Update();
+            }
+
+            if (m_CurSubFsm != null)
+            {
+                if (m_Running == false) { return; }
+                m_CurSubFsm.SubFsm_Update();
             }
         }
 
@@ -89,6 +102,21 @@ namespace Jerry
         public virtual void OnUpdate() { }
         public virtual void OnDraw() { }
         public virtual void OnDrawSelected() { }
+
+        public void AddSubFsm(SubFsm subFsm)
+        {
+            if (subFsm == null)
+            {
+                return;
+            }
+
+            subFsm.SetFsm(this);
+
+            if (m_SubFsms.Contains(subFsm) == false)
+            {
+                m_SubFsms.Add(subFsm);
+            }
+        }
 
         public void AddState(State state)
         {
@@ -115,15 +143,49 @@ namespace Jerry
             {
                 if (state.ID == stateID)
                 {
-                    //加if是为了防止在OnExit使用跳转导致死循环
-                    if (m_CurState.Running)
-                    {
-                        m_CurState.State_Exit();
-                    }
+                    ExitLastState();
                     m_CurState = state;
                     m_CurState.State_Enter();
-                    break;
+                    return;
                 }
+            }
+
+            foreach (SubFsm subFsm in m_SubFsms)
+            {
+                if (subFsm.CheckChangeState(stateID))
+                {
+                    ExitLastState(true);
+                    if (subFsm != m_CurSubFsm)
+                    {
+                        if (m_CurSubFsm != null && m_CurSubFsm.Running)
+                        {
+                            m_CurSubFsm.SubFsm_Exit();
+                        }
+
+                        m_CurSubFsm = subFsm;
+                        m_CurSubFsm.SubFsm_Enter();
+                    }
+                    m_CurSubFsm.DoChangeState();
+                    return;
+                }
+            }
+        }
+
+        private void ExitLastState(bool onlyState = false)
+        {
+            if (m_CurState != null && m_CurState.Running)
+            {
+                m_CurState.State_Exit();
+            }
+            m_CurState = null;
+
+            if (!onlyState)
+            {
+                if (m_CurSubFsm != null && m_CurSubFsm.Running)
+                {
+                    m_CurSubFsm.SubFsm_Exit();
+                }
+                m_CurSubFsm = null;
             }
         }
 
@@ -138,6 +200,10 @@ namespace Jerry
             {
                 m_CurState.State_DrawSelected();
             }
+            if (m_CurSubFsm != null)
+            {
+                m_CurSubFsm.SubFsm_DrawSelected();
+            }
         }
 
         public void Fsm_Draw()
@@ -150,6 +216,10 @@ namespace Jerry
             if (m_CurState != null)
             {
                 m_CurState.State_Draw();
+            }
+            if (m_CurSubFsm != null)
+            {
+                m_CurSubFsm.SubFsm_Draw();
             }
         }
 
