@@ -11,6 +11,11 @@ public class ATState_Idle1 : State
         Debug.Log("ATState_Idle1 Enter");
     }
 
+    public override void OnUpdate()
+    {
+        base.OnUpdate();
+    }
+
     public override void OnExit()
     {
         base.OnExit();

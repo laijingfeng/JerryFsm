@@ -13,7 +13,7 @@ public class ATAction_Input : Action
     {
         base.OnUpdate();
 
-        if (Input.GetKeyDown(KeyCode.M))
+        if (Input.GetKeyDown(KeyCode.S))
         {
             Debug.Log("ATAction_Input Tri");
             MyState.MyFsm.ChangeState(ATFsm.StateID.Idle1.GetHashCode());

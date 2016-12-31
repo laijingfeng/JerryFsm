@@ -13,9 +13,19 @@ public class MonsterState_RunWay : State
         curIdx = 0;
     }
 
+    float time = 0f;
+    float dur = 1f;
+
     public override void OnUpdate()
     {
         base.OnUpdate();
+
+        time += Time.deltaTime;
+        if (time > dur)
+        {
+            time = 0f;
+            //Debug.Log("MonsterState_RunWay");
+        }
 
         if (path == null || path.Length <= 0)
         {
