@@ -82,11 +82,11 @@ namespace Jerry
             }
         }
 
-        public void AddState(State state)
+        public State AddState(State state)
         {
             if (state == null)
             {
-                return;
+                return state;
             }
 
             state.SetSubFsm(this);
@@ -95,6 +95,8 @@ namespace Jerry
             {
                 m_States.Add(state);
             }
+
+            return state;
         }
 
         /// <summary>
@@ -110,6 +112,8 @@ namespace Jerry
                 {
                     m_LastState = m_CurState;
                     m_CurState = state;
+                    JerryDebug.Inst.LogWarn("find " + (this as SFTSubFsm).Flag
+                        + (state as SFTState).Flag + " " + (SFTFsm.StateID)stateID);
                     return true;
                 }
             }
@@ -154,7 +158,10 @@ namespace Jerry
                     m_LastSubFsm = null;
                     m_CurSubFsm.SubFsm_Enter();
                 }
-                m_CurSubFsm.DoChangeState();
+                else
+                {
+                    m_CurSubFsm.DoChangeState();
+                }
             }
         }
 

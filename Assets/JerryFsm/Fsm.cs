@@ -50,14 +50,20 @@ namespace Jerry
         /// </summary>
         public void Fsm_Start()
         {
-            if (m_CurState == null)
+            if (m_States.Count > 0)
             {
-                if (m_States.Count > 0)
+                m_CurState = m_States[0];
+                m_CurState.State_Enter();
+            }
+            else
+            {
+                if (m_SubFsms.Count > 0)
                 {
-                    m_CurState = m_States[0];
-                    m_CurState.State_Enter();
+                    m_CurSubFsm = m_SubFsms[0];
+                    m_CurSubFsm.SubFsm_Enter();
                 }
             }
+
             m_Running = true;
             OnStart();
         }
@@ -103,11 +109,11 @@ namespace Jerry
         public virtual void OnDraw() { }
         public virtual void OnDrawSelected() { }
 
-        public void AddSubFsm(SubFsm subFsm)
+        public SubFsm AddSubFsm(SubFsm subFsm)
         {
             if (subFsm == null)
             {
-                return;
+                return subFsm;
             }
 
             subFsm.SetFsm(this);
@@ -116,13 +122,14 @@ namespace Jerry
             {
                 m_SubFsms.Add(subFsm);
             }
+            return subFsm;
         }
 
-        public void AddState(State state)
+        public State AddState(State state)
         {
             if (state == null)
             {
-                return;
+                return state;
             }
 
             state.SetFsm(this);
@@ -131,6 +138,7 @@ namespace Jerry
             {
                 m_States.Add(state);
             }
+            return state;
         }
 
         /// <summary>
@@ -139,6 +147,8 @@ namespace Jerry
         /// <param name="stateID"></param>
         public void ChangeState(int stateID)
         {
+            JerryDebug.Inst.LogWarn("ChangeState " + (SFTFsm.StateID)stateID);
+
             foreach (State state in m_States)
             {
                 if (state.ID == stateID)
@@ -157,15 +167,21 @@ namespace Jerry
                     ExitLastState(true);
                     if (subFsm != m_CurSubFsm)
                     {
+                        JerryDebug.Inst.LogWarn("ddddxx");
                         if (m_CurSubFsm != null && m_CurSubFsm.Running)
                         {
+                            JerryDebug.Inst.LogWarn("dddd");
                             m_CurSubFsm.SubFsm_Exit();
                         }
 
                         m_CurSubFsm = subFsm;
                         m_CurSubFsm.SubFsm_Enter();
                     }
-                    m_CurSubFsm.DoChangeState();
+                    else
+                    {
+                        JerryDebug.Inst.LogWarn("ddddxxdddd " + (m_CurSubFsm as SFTSubFsm).Flag + (subFsm as SFTSubFsm).Flag);
+                        m_CurSubFsm.DoChangeState();
+                    }
                     return;
                 }
             }

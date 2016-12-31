@@ -197,11 +197,11 @@ namespace Jerry
         public virtual void OnDraw() { }
         public virtual void OnDrawSelected() { }
 
-        public void AddAction(Action a)
+        public Action AddAction(Action a)
         {
             if (a == null)
             {
-                return;
+                return a;
             }
 
             if (m_Actions.Contains(a) == false)
@@ -209,6 +209,7 @@ namespace Jerry
                 a.SetState(this);
                 m_Actions.Add(a);
             }
+            return a;
         }
 
         public void AddTransition(Transition t)
