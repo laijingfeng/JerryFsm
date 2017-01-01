@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JerryFsm</name>
+    </assembly>
+    <members>
+        <member name="F:Jerry.Fsm.m_Running">
+            <summary>
+            运行中
+            </summary>
+        </member>
+        <member name="M:Jerry.Fsm.SetMgr(Jerry.AIMgr)">
+            <summary>
+            设置Mgr，内部调用
+            </summary>
+            <param name="aiMgr"></param>
+        </member>
+        <member name="M:Jerry.Fsm.Fsm_Start">
+            <summary>
+            内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.Fsm.Fsm_Update">
+            <summary>
+            更新，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.Fsm.ChangeState(System.Int32)">
+            <summary>
+            可供外部调用，用来强制跳转
+            </summary>
+            <param name="stateID"></param>
+        </member>
+        <member name="M:Jerry.Action.SetState(Jerry.State)">
+            <summary>
+            设置State，内部调用
+            </summary>
+            <param name="state"></param>
+        </member>
+        <member name="M:Jerry.Action.Action_Reset">
+            <summary>
+            重置，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.Action.Action_Enter">
+            <summary>
+            进入，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.Action.Action_Update">
+            <summary>
+            更新，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.Action.OnEnter">
+            <summary>
+            进入，准备数据
+            </summary>
+        </member>
+        <member name="M:Jerry.Action.OnUpdate">
+            <summary>
+            <para>更新</para>
+            </summary>
+        </member>
+        <member name="M:Jerry.Action.OnExit">
+            <summary>
+            退出时，做清理
+            </summary>
+        </member>
+        <member name="M:Jerry.Action.Finish">
+            <summary>
+            结束Action
+            </summary>
+        </member>
+        <member name="P:Jerry.Action.MyState">
+            <summary>
+            State
+            </summary>
+        </member>
+        <member name="P:Jerry.Action.Started">
+            <summary>
+            是否已经开始，内部调用
+            </summary>
+        </member>
+        <member name="P:Jerry.Action.Finished">
+            <summary>
+            是否已经结束，内部调用
+            </summary>
+        </member>
+        <member name="T:Jerry.Transition">
+            <summary>
+            转换条件
+            </summary>
+        </member>
+        <member name="F:Jerry.Transition.m_State">
+            <summary>
+            判条件的时候要用到state的信息
+            </summary>
+        </member>
+        <member name="M:Jerry.Transition.SetState(Jerry.State)">
+            <summary>
+            内部调用
+            </summary>
+            <param name="s"></param>
+        </member>
+        <member name="T:Jerry.State">
+            <summary>
+            <para>状态</para>
+            </summary>
+        </member>
+        <member name="M:Jerry.State.SetSequnceAction(System.Boolean)">
+            <summary>
+            设置Action是否是序列Action
+            </summary>
+            <param name="sequnce"></param>
+        </member>
+        <member name="M:Jerry.State.SetFsm(Jerry.Fsm)">
+            <summary>
+            设置Fsm，内部调用
+            </summary>
+            <param name="fsm"></param>
+        </member>
+        <member name="M:Jerry.State.SetSubFsm(Jerry.SubFsm)">
+            <summary>
+            设置SubFsm，内部调用
+            </summary>
+            <param name="subFsm"></param>
+        </member>
+        <member name="M:Jerry.State.State_Enter">
+            <summary>
+            进入，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.State.State_Update">
+            <summary>
+            更新，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.State.State_Exit">
+            <summary>
+            退出，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.State.OnEnter">
+            <summary>
+            进入
+            </summary>
+        </member>
+        <member name="M:Jerry.State.OnUpdate">
+            <summary>
+            <para>更新</para>
+            </summary>
+        </member>
+        <member name="M:Jerry.State.OnExit">
+            <summary>
+            退出时
+            </summary>
+        </member>
+        <member name="P:Jerry.State.Running">
+            <summary>
+            运行中，内部调用
+            </summary>
+        </member>
+        <member name="P:Jerry.State.MyFsm">
+            <summary>
+            Fsm
+            </summary>
+        </member>
+        <member name="P:Jerry.State.ID">
+            <summary>
+            ID
+            </summary>
+        </member>
+        <member name="M:Jerry.SubFsm.SetFsm(Jerry.Fsm)">
+            <summary>
+            设置Fsm，内部调用
+            </summary>
+            <param name="fsm"></param>
+        </member>
+        <member name="M:Jerry.SubFsm.SetSequnceAction(System.Boolean)">
+            <summary>
+            设置Action是否是序列Action
+            </summary>
+            <param name="sequnce"></param>
+        </member>
+        <member name="M:Jerry.SubFsm.SetSubFsm(Jerry.SubFsm)">
+            <summary>
+            设置SubFsm，内部调用
+            </summary>
+            <param name="subFsm"></param>
+        </member>
+        <member name="M:Jerry.SubFsm.CheckChangeState(System.Int32)">
+            <summary>
+            检查是否有状态切换，内部调用
+            </summary>
+            <param name="stateID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Jerry.SubFsm.DoChangeState">
+            <summary>
+            状态切换，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.SubFsm.SubFsm_Enter">
+            <summary>
+            进入，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.SubFsm.SubFsm_Update">
+            <summary>
+            更新，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.SubFsm.SubFsm_Exit">
+            <summary>
+            退出，内部调用
+            </summary>
+        </member>
+        <member name="M:Jerry.SubFsm.OnEnter">
+            <summary>
+            进入
+            </summary>
+        </member>
+        <member name="M:Jerry.SubFsm.OnUpdate">
+            <summary>
+            <para>更新</para>
+            </summary>
+        </member>
+        <member name="M:Jerry.SubFsm.OnExit">
+            <summary>
+            退出时
+            </summary>
+        </member>
+        <member name="P:Jerry.SubFsm.Running">
+            <summary>
+            运行中，内部调用
+            </summary>
+        </member>
+        <member name="P:Jerry.SubFsm.MyFsm">
+            <summary>
+            Fsm
+            </summary>
+        </member>
+    </members>
+</doc>
