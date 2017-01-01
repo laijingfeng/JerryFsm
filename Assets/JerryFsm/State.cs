@@ -2,6 +2,9 @@
 
 namespace Jerry
 {
+    /// <summary>
+    /// <para>状态</para>
+    /// </summary>
     public abstract class State
     {
         private List<Transition> m_Transitions;
@@ -13,6 +16,8 @@ namespace Jerry
         /// 运行中，内部调用
         /// </summary>
         public bool Running { get { return m_Running; } }
+
+        public bool m_ReadyToEnter;
 
         private SubFsm m_SubFsm;
 
@@ -75,10 +80,11 @@ namespace Jerry
         public State(int id)
         {
             m_ID = id;
-            m_Transitions = new List<Transition>();
-            m_Actions = new List<Action>();
+            m_Transitions = null;
+            m_Actions = null;
             m_SequnceAction = false;
             m_Running = false;
+            m_ReadyToEnter = false;
         }
 
         private int m_ID;
@@ -95,18 +101,24 @@ namespace Jerry
             m_Running = true;
             OnEnter();
 
-            foreach (Action ac in m_Actions)
-            {
-                ac.Action_Reset();
-            }
+            if (m_Running == false) { return; }
 
-            if (m_SequnceAction == false)
+            if (m_Actions != null)
             {
                 foreach (Action ac in m_Actions)
                 {
-                    if (ac.Started == false)
+                    ac.Action_Reset();
+                }
+
+                if (m_SequnceAction == false)
+                {
+                    foreach (Action ac in m_Actions)
                     {
-                        ac.Action_Enter();
+                        if (ac.Started == false)
+                        {
+                            ac.Action_Enter();
+                            if (m_Running == false) { return; }
+                        }
                     }
                 }
             }
@@ -119,49 +131,61 @@ namespace Jerry
         {
             if (MyFsm == null) { return; }
 
-            if (!m_Running) { return; }
+            if (m_ReadyToEnter)
+            {
+                m_ReadyToEnter = false;
+                State_Enter();
+                return;//隔开一帧，因为Enter里面可能继续发跳转变化
+            }
+
+            if (m_Running == false) { return; }
             OnUpdate();
 
-            if (m_SequnceAction == false)
+            if (m_Actions != null)
             {
-                foreach (Action ac in m_Actions)
+                if (m_SequnceAction == false)
                 {
-                    if (!m_Running) { return; }
-
-                    if (ac.Finished == false)
+                    foreach (Action ac in m_Actions)
                     {
-                        ac.Action_Update();
-                    }
-                }
-            }
-            else
-            {
-                foreach (Action ac in m_Actions)
-                {
-                    if (!m_Running) { return; }
-                    if (ac.Finished == false)
-                    {
-                        if (ac.Started == false)
-                        {
-                            ac.Action_Enter();
-                        }
-                        else
+                        if (!m_Running) { return; }
+                        if (ac.Finished == false)
                         {
                             ac.Action_Update();
                         }
-                        break;
+                    }
+                }
+                else
+                {
+                    foreach (Action ac in m_Actions)
+                    {
+                        if (!m_Running) { return; }
+                        if (ac.Finished == false)
+                        {
+                            if (ac.Started == false)
+                            {
+                                ac.Action_Enter();
+                            }
+                            else//Enter和Update隔开一帧，因为Enter可能把它结束了，方便控制状态
+                            {
+                                ac.Action_Update();
+                            }
+                            break;
+                        }
                     }
                 }
             }
 
-            foreach (Transition tr in m_Transitions)
+            if (m_Transitions != null)
             {
-                if (!m_Running) { return; }
-
-                if (tr != null && tr.Check())
+                foreach (Transition tr in m_Transitions)
                 {
-                    MyFsm.ChangeState(tr.NextID);
-                    return;
+                    if (!m_Running) { return; }
+
+                    if (tr != null && tr.Check())
+                    {
+                        MyFsm.ChangeState(tr.NextID);
+                        return;
+                    }
                 }
             }
         }
@@ -172,11 +196,14 @@ namespace Jerry
         public void State_Exit()
         {
             m_Running = false;
-            foreach (Action ac in m_Actions)
+            if (m_Actions != null)
             {
-                if (ac.Started == true && ac.Finished == false)
+                foreach (Action ac in m_Actions)
                 {
-                    ac.Finish();
+                    if (ac.Started == true && ac.Finished == false)
+                    {
+                        ac.Finish();
+                    }
                 }
             }
             OnExit();
@@ -197,33 +224,44 @@ namespace Jerry
         public virtual void OnDraw() { }
         public virtual void OnDrawSelected() { }
 
-        public Action AddAction(Action a)
+        public State AddAction(Action a)
         {
             if (a == null)
             {
-                return a;
+                return this;
             }
 
-            if (m_Actions.Contains(a) == false)
+            if (m_Actions == null)
+            {
+                a.SetState(this);
+                m_Actions = new List<Action>() { a };
+            }
+            else if (m_Actions.Contains(a) == false)
             {
                 a.SetState(this);
                 m_Actions.Add(a);
             }
-            return a;
+            return this;
         }
 
-        public void AddTransition(Transition t)
+        public State AddTransition(Transition t)
         {
             if (t == null)
             {
-                return;
+                return this;
             }
 
-            if (m_Transitions.Contains(t) == false)
+            if (m_Transitions == null)
+            {
+                t.SetState(this);
+                m_Transitions = new List<Transition>() { t };
+            }
+            else if (m_Transitions.Contains(t) == false)
             {
                 t.SetState(this);
                 m_Transitions.Add(t);
             }
+            return this;
         }
 
         public void State_Draw()
@@ -240,7 +278,7 @@ namespace Jerry
 
         public string GetNode()
         {
-            return string.Format("{0}[{1}]", GetNodeName(), this.GetType());
+            return string.Format("{0}(({1}))", GetNodeName(), this.GetType());
         }
 
         public string GetNodeName()
@@ -252,9 +290,12 @@ namespace Jerry
         {
             string ret = "";
             ret += string.Format("{0}\n", GetNode());
-            foreach (Action ac in m_Actions)
+            if (m_Actions != null)
             {
-                ret += string.Format("{0}\n", ac.GetNode());
+                foreach (Action ac in m_Actions)
+                {
+                    ret += string.Format("{0}\n", ac.GetNode());
+                }
             }
             return ret;
         }
@@ -263,17 +304,20 @@ namespace Jerry
         {
             string ret = string.Format("subgraph {0}\n", this.GetType());
             ret += string.Format("{0}\n", GetNodeName());
-            foreach (Action ac in m_Actions)
+            if (m_Actions != null)
             {
-                ret += string.Format("{0}\n", ac.GetNodeName());
-            }
-            if (m_SequnceAction)
-            {
-                string preName = GetNodeName();
                 foreach (Action ac in m_Actions)
                 {
-                    ret += string.Format("{0}-->{1}\n", preName, ac.GetNodeName());
-                    preName = ac.GetNodeName();
+                    ret += string.Format("{0}\n", ac.GetNodeName());
+                }
+                if (m_SequnceAction)
+                {
+                    string preName = GetNodeName();
+                    foreach (Action ac in m_Actions)
+                    {
+                        ret += string.Format("{0}-->{1}\n", preName, ac.GetNodeName());
+                        preName = ac.GetNodeName();
+                    }
                 }
             }
             ret += "end\n";
@@ -283,9 +327,12 @@ namespace Jerry
         public string GetLinks()
         {
             string ret = "";
-            foreach (Transition tr in m_Transitions)
+            if (m_Transitions != null)
             {
-                ret += string.Format("{0}-->|{1}|{2}\n", GetNodeName(), tr.GetNodeName(), tr.GetNextNodeName());
+                foreach (Transition tr in m_Transitions)
+                {
+                    ret += string.Format("{0}-->|{1}|{2}\n", GetNodeName(), tr.GetNodeName(), tr.GetNextNodeName());
+                }
             }
             return ret;
         }

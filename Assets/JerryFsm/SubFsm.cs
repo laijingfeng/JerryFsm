@@ -4,11 +4,18 @@ namespace Jerry
 {
     public abstract class SubFsm
     {
+        private int m_SubFsmID;
+        private static int SubFsmIDGen = 0;
+
         private bool m_Running;
         /// <summary>
         /// 运行中，内部调用
         /// </summary>
         public bool Running { get { return m_Running; } }
+
+        private List<Transition> m_Transitions;
+        private List<Action> m_Actions;
+        private bool m_SequnceAction;
 
         private List<State> m_States;
         private List<SubFsm> m_SubFsms;
@@ -45,8 +52,12 @@ namespace Jerry
             m_CurSubFsm = null;
             m_LastState = null;
             m_LastSubFsm = null;
-            m_States = new List<State>();
-            m_SubFsms = new List<SubFsm>();
+            m_States = null;
+            m_SubFsms = null;
+            m_Transitions = null;
+            m_Actions = null;
+            m_SequnceAction = false;
+            m_SubFsmID = SubFsmIDGen++;
         }
 
         /// <summary>
@@ -59,6 +70,15 @@ namespace Jerry
         }
 
         /// <summary>
+        /// 设置Action是否是序列Action
+        /// </summary>
+        /// <param name="sequnce"></param>
+        public void SetSequnceAction(bool sequnce)
+        {
+            m_SequnceAction = sequnce;
+        }
+
+        /// <summary>
         /// 设置SubFsm，内部调用
         /// </summary>
         /// <param name="subFsm"></param>
@@ -67,19 +87,64 @@ namespace Jerry
             m_SubFsm = subFsm;
         }
 
-        public void AddSubFsm(SubFsm subFsm)
+        public SubFsm AddAction(Action a)
+        {
+            if (a == null)
+            {
+                return this;
+            }
+
+            if (m_Actions == null)
+            {
+                a.SetSubFsm(this);
+                m_Actions = new List<Action>() { a };
+            }
+            else if (m_Actions.Contains(a) == false)
+            {
+                a.SetSubFsm(this);
+                m_Actions.Add(a);
+            }
+            return this;
+        }
+
+        public SubFsm AddTransition(Transition t)
+        {
+            if (t == null)
+            {
+                return this;
+            }
+
+            if (m_Transitions == null)
+            {
+                t.SetSubFsm(this);
+                m_Transitions = new List<Transition>() { t };
+            }
+            else if (m_Transitions.Contains(t) == false)
+            {
+                t.SetSubFsm(this);
+                m_Transitions.Add(t);
+            }
+            return this;
+        }
+
+        public SubFsm AddSubFsm(SubFsm subFsm)
         {
             if (subFsm == null)
             {
-                return;
+                return subFsm;
             }
 
             subFsm.SetSubFsm(this);
 
-            if (m_SubFsms.Contains(subFsm) == false)
+            if (m_SubFsms == null)
+            {
+                m_SubFsms = new List<SubFsm>() { subFsm };
+            }
+            else if (m_SubFsms.Contains(subFsm) == false)
             {
                 m_SubFsms.Add(subFsm);
             }
+            return subFsm;
         }
 
         public State AddState(State state)
@@ -91,7 +156,11 @@ namespace Jerry
 
             state.SetSubFsm(this);
 
-            if (m_States.Contains(state) == false)
+            if (m_States == null)
+            {
+                m_States = new List<State>() { state };
+            }
+            else if (m_States.Contains(state) == false)
             {
                 m_States.Add(state);
             }
@@ -106,31 +175,35 @@ namespace Jerry
         /// <returns></returns>
         public bool CheckChangeState(int stateID)
         {
-            foreach (State state in m_States)
+            if (m_States != null)
             {
-                if (state.ID == stateID)
+                foreach (State state in m_States)
                 {
-                    m_LastState = m_CurState;
-                    m_CurState = state;
-                    JerryDebug.Inst.LogWarn("find " + (this as SFTSubFsm).Flag
-                        + (state as SFTState).Flag + " " + (SFTFsm.StateID)stateID);
-                    return true;
-                }
-            }
-
-            foreach (SubFsm subFsm in m_SubFsms)
-            {
-                if (subFsm.CheckChangeState(stateID))
-                {
-                    if (subFsm != m_CurSubFsm)
+                    if (state.ID == stateID)
                     {
-                        m_LastSubFsm = m_CurSubFsm;
-                        m_CurSubFsm = subFsm;
+                        m_LastState = m_CurState;
+                        m_CurState = state;
+                        return true;
                     }
-                    return true;
                 }
             }
-
+            
+            if (m_SubFsms != null)
+            {
+                foreach (SubFsm subFsm in m_SubFsms)
+                {
+                    if (subFsm.CheckChangeState(stateID))
+                    {
+                        if (subFsm != m_CurSubFsm)
+                        {
+                            m_LastSubFsm = m_CurSubFsm;
+                            m_CurSubFsm = subFsm;
+                        }
+                        return true;
+                    }
+                }
+            }
+            
             return false;
         }
 
@@ -141,12 +214,20 @@ namespace Jerry
         {
             if (m_CurState != null)
             {
-                ExitLastState();
-                m_CurState.State_Enter();
+                if (m_CurState == m_LastState)
+                {
+                    ExitLastState();
+                    m_CurState.m_ReadyToEnter = true;
+                }
+                else
+                {
+                    ExitLastState();
+                    m_CurState.State_Enter();
+                }
                 return;
             }
 
-            if(m_CurSubFsm != null)
+            if (m_CurSubFsm != null)
             {
                 ExitLastState(true);
                 if (m_CurSubFsm != m_LastSubFsm)
@@ -190,11 +271,36 @@ namespace Jerry
         {
             m_Running = true;
             OnEnter();
+
+            if (m_Actions != null)
+            {
+                if (m_Running == false) { return; }
+
+                foreach (Action ac in m_Actions)
+                {
+                    ac.Action_Reset();
+                }
+
+                if (m_SequnceAction == false)
+                {
+                    foreach (Action ac in m_Actions)
+                    {
+                        if (ac.Started == false)
+                        {
+                            ac.Action_Enter();
+                            if (m_Running == false) { return; }
+                        }
+                    }
+                }
+            }
+            
+            if (m_Running == false) { return; }
+
             if (m_CurState != null)
             {
                 m_CurState.State_Enter();
             }
-            if (m_CurSubFsm != null)
+            else if (m_CurSubFsm != null)
             {
                 m_CurSubFsm.SubFsm_Enter();
             }
@@ -209,15 +315,62 @@ namespace Jerry
 
             OnUpdate();
 
-            if (m_CurState != null)
+            if (m_Actions != null)
             {
-                if (m_Running == false) { return; }
-                m_CurState.State_Update();
+                if (m_SequnceAction == false)
+                {
+                    foreach (Action ac in m_Actions)
+                    {
+                        if (!m_Running) { return; }
+                        if (ac.Finished == false)
+                        {
+                            ac.Action_Update();
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (Action ac in m_Actions)
+                    {
+                        if (!m_Running) { return; }
+                        if (ac.Finished == false)
+                        {
+                            if (ac.Started == false)
+                            {
+                                ac.Action_Enter();
+                            }
+                            else//Enter和Update隔开一帧，因为Enter可能把它结束了，方便控制状态
+                            {
+                                ac.Action_Update();
+                            }
+                            break;
+                        }
+                    }
+                }
             }
 
-            if (m_CurSubFsm != null)
+            if (m_Transitions != null)
             {
-                if (m_Running == false) { return; }
+                foreach (Transition tr in m_Transitions)
+                {
+                    if (!m_Running) { return; }
+
+                    if (tr != null && tr.Check())
+                    {
+                        MyFsm.ChangeState(tr.NextID);
+                        return;
+                    }
+                }
+            }
+
+            if (!m_Running) { return; }
+
+            if (m_CurState != null)
+            {
+                m_CurState.State_Update();
+            }
+            else if (m_CurSubFsm != null)
+            {
                 m_CurSubFsm.SubFsm_Update();
             }
         }
@@ -268,5 +421,108 @@ namespace Jerry
         {
             OnDrawSelected();
         }
+
+        #region Graph
+
+        public string GetNode()
+        {
+            return string.Format("{0}[{1}]", GetNodeName(), this.GetType());
+        }
+
+        public string GetNodeName()
+        {
+            return string.Format("{0}", m_SubFsmID);
+        }
+
+        public string GetNodes()
+        {
+            string ret = "";
+            ret += string.Format("{0}\n\n", GetNode());
+            if (m_Actions != null)
+            {
+                foreach (Action ac in m_Actions)
+                {
+                    ret += string.Format("{0}\n", ac.GetNode());
+                }
+            }
+            if (m_States != null)
+            {
+                foreach (State s in m_States)
+                {
+                    ret += string.Format("{0}\n", s.GetNodes());
+                }
+            }
+            if (m_SubFsms != null)
+            {
+                foreach (SubFsm sub in m_SubFsms)
+                {
+                    ret += string.Format("{0}\n", sub.GetNodes());
+                }
+            }
+            return ret;
+        }
+
+        public string GetSubGraph()
+        {
+            string ret = "";
+            if (m_States != null)
+            {
+                foreach (State s in m_States)
+                {
+                    ret += string.Format("{0}\n", s.GetSubGraph());
+                }
+            }
+            //Action忽略
+            if (m_SubFsms != null)
+            {
+                foreach (SubFsm sub in m_SubFsms)
+                {
+                    ret += sub.GetSubGraph();
+                }
+            }
+            return ret;
+        }
+
+        public string GetLinks()
+        {
+            string ret = "";
+            if (m_States != null)
+            {
+                bool fi = true;
+                foreach (State s in m_States)
+                {
+                    ret += string.Format("{0}-{1}->{2}\n", GetNodeName(), fi ? "" : ".", s.GetNodeName());
+                    fi = false;
+                    //break;
+                }
+            }
+            if (m_SubFsms != null)
+            {
+                bool fi = true;
+                foreach (SubFsm sub in m_SubFsms)
+                {
+                    ret += string.Format("{0}-{1}->{2}\n", GetNodeName(), fi ? "" : ".", sub.GetNodeName());
+                    fi = false;
+                    //break;
+                }
+            }
+            if (m_States != null)
+            {
+                foreach (State s in m_States)
+                {
+                    ret += string.Format("{0}", s.GetLinks());
+                }
+            }
+            if (m_SubFsms != null)
+            {
+                foreach (SubFsm sub in m_SubFsms)
+                {
+                    ret += sub.GetLinks();
+                }
+            }
+            return ret;
+        }
+
+        #endregion Graph
     }
 }

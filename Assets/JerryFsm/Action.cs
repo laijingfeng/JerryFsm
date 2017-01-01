@@ -9,6 +9,8 @@ namespace Jerry
         /// </summary>
         public State MyState { get { return m_State; } }
 
+        private SubFsm m_SubFsm;
+
         private Fsm m_Fsm;
         public Fsm MyFsm
         {
@@ -17,6 +19,10 @@ namespace Jerry
                 if (m_Fsm == null && MyState != null)
                 {
                     m_Fsm = MyState.MyFsm;
+                }
+                if (m_Fsm == null && m_SubFsm != null)
+                {
+                    m_Fsm = m_SubFsm.MyFsm;
                 }
                 return m_Fsm;
             }
@@ -54,6 +60,13 @@ namespace Jerry
         public void SetState(State state)
         {
             m_State = state;
+            m_Finished = false;
+            m_Started = false;
+        }
+
+        public void SetSubFsm(SubFsm subFsm)
+        {
+            m_SubFsm = subFsm;
             m_Finished = false;
             m_Started = false;
         }
