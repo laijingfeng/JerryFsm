@@ -18,6 +18,7 @@ public class SFTAIMgr : AIMgr
         }));
         sub1_sat1.AddAction(new SFTAction("Sub1_Sta1_Ac1"));
         sub1_sat1.AddAction(new SFTAction("Sub1_Sta1_Ac2"));
+        sub1_sat1.SetSequnceAction(true);
         sub1.AddState(new SFTState(SFTFsm.StateID.S3.GetHashCode(), "Sub1_Sta2", (fsm) =>
         {
             fsm.ChangeState(SFTFsm.StateID.S4.GetHashCode());

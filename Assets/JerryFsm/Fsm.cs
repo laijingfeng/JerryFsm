@@ -257,7 +257,7 @@ namespace Jerry
 
         public string GetNode()
         {
-            return string.Format("{0}[{1}]", GetNodeName(), this.GetType());
+            return string.Format("{0} [label = \"{1}\"];\n", GetNodeName(), this.GetType());
         }
 
         public string GetNodeName()
@@ -268,39 +268,19 @@ namespace Jerry
         public string GetNodes()
         {
             string ret = "";
-            ret += string.Format("{0}\n\n", GetNode());
+            ret += string.Format("{0}", GetNode());
             if (m_States != null)
             {
                 foreach (State s in m_States)
                 {
-                    ret += string.Format("{0}\n", s.GetNodes());
+                    ret += string.Format("{0}", s.GetNode());
                 }
             }
             if (m_SubFsms != null)
             {
                 foreach (SubFsm sub in m_SubFsms)
                 {
-                    ret += string.Format("{0}\n", sub.GetNodes());
-                }
-            }
-            return ret;
-        }
-
-        public string GetSubGraph()
-        {
-            string ret = "";
-            if (m_States != null)
-            {
-                foreach (State s in m_States)
-                {
-                    ret += string.Format("{0}\n", s.GetSubGraph());
-                }
-            }
-            if (m_SubFsms != null)
-            {
-                foreach (SubFsm sub in m_SubFsms)
-                {
-                    ret += sub.GetSubGraph();
+                    ret += string.Format("{0}", sub.GetNodes());
                 }
             }
             return ret;
@@ -314,9 +294,25 @@ namespace Jerry
                 bool fi = true;
                 foreach (State s in m_States)
                 {
-                    ret += string.Format("{0}-{1}->{2}\n", GetNodeName(), fi ? "" : ".", s.GetNodeName());
+                    ret += string.Format("{0}->{1} [style = {2} color = pink];\n", GetNodeName(), s.GetNodeName(), fi ? "filled" : "dotted");
                     fi = false;
-                    //break;
+                }
+
+                if (m_SubFsms != null)
+                {
+                    foreach (SubFsm sub in m_SubFsms)
+                    {
+                        ret += string.Format("{0}->{1} [style = {2} color = pink];\n", GetNodeName(), sub.GetNodeName(), "dotted");
+                    }
+                }
+            }
+            else if (m_SubFsms != null)
+            {
+                bool fi = true;
+                foreach (SubFsm sub in m_SubFsms)
+                {
+                    ret += string.Format("{0}->{1} [style = {2} color = pink];\n", GetNodeName(), sub.GetNodeName(), fi ? "filled" : "dotted");
+                    fi = false;
                 }
             }
             if (m_States != null)
@@ -324,6 +320,13 @@ namespace Jerry
                 foreach (State s in m_States)
                 {
                     ret += string.Format("{0}", s.GetLinks());
+                }
+            }
+            if (m_SubFsms != null)
+            {
+                foreach (SubFsm sub in m_SubFsms)
+                {
+                    ret += sub.GetLinks();
                 }
             }
             return ret;

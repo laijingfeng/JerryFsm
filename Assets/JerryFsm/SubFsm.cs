@@ -426,58 +426,42 @@ namespace Jerry
 
         public string GetNode()
         {
-            return string.Format("{0}[{1}]", GetNodeName(), this.GetType());
+            string action = string.Empty;
+            if (m_Actions != null)
+            {
+                foreach (Action ac in m_Actions)
+                {
+                    action += string.Format("|{0}", (m_SequnceAction && string.IsNullOrEmpty(action)) ? "{" : "") + ac.GetNodeName();
+                }
+                if (m_SequnceAction)
+                {
+                    action += "}";
+                }
+            }
+            return string.Format("{0} [shape = record, label = \"{1}.{2}{3}\", color = green];\n", GetNodeName(), this.GetType(), GetNodeName(), action);
         }
 
         public string GetNodeName()
         {
-            return string.Format("{0}", m_SubFsmID);
+            return string.Format("SubFsm{0}", m_SubFsmID);
         }
 
         public string GetNodes()
         {
             string ret = "";
-            ret += string.Format("{0}\n\n", GetNode());
-            if (m_Actions != null)
-            {
-                foreach (Action ac in m_Actions)
-                {
-                    ret += string.Format("{0}\n", ac.GetNode());
-                }
-            }
+            ret += string.Format("{0}", GetNode());
             if (m_States != null)
             {
                 foreach (State s in m_States)
                 {
-                    ret += string.Format("{0}\n", s.GetNodes());
+                    ret += string.Format("{0}", s.GetNode());
                 }
             }
             if (m_SubFsms != null)
             {
                 foreach (SubFsm sub in m_SubFsms)
                 {
-                    ret += string.Format("{0}\n", sub.GetNodes());
-                }
-            }
-            return ret;
-        }
-
-        public string GetSubGraph()
-        {
-            string ret = "";
-            if (m_States != null)
-            {
-                foreach (State s in m_States)
-                {
-                    ret += string.Format("{0}\n", s.GetSubGraph());
-                }
-            }
-            //Action忽略
-            if (m_SubFsms != null)
-            {
-                foreach (SubFsm sub in m_SubFsms)
-                {
-                    ret += sub.GetSubGraph();
+                    ret += string.Format("{0}", sub.GetNodes());
                 }
             }
             return ret;
@@ -486,14 +470,20 @@ namespace Jerry
         public string GetLinks()
         {
             string ret = "";
+            if (m_Transitions != null)
+            {
+                foreach (Transition tr in m_Transitions)
+                {
+                    ret += string.Format("{0}->{1} [label = \"{2}\"];\n", GetNodeName(), tr.GetNextNodeName(), tr.GetNodeName());
+                }
+            }
             if (m_States != null)
             {
                 bool fi = true;
                 foreach (State s in m_States)
                 {
-                    ret += string.Format("{0}-{1}->{2}\n", GetNodeName(), fi ? "" : ".", s.GetNodeName());
+                    ret += string.Format("{0}->{1} [style = {2} color = pink];\n", GetNodeName(), s.GetNodeName(), fi ? "filled" : "dotted");
                     fi = false;
-                    //break;
                 }
             }
             if (m_SubFsms != null)
@@ -501,9 +491,8 @@ namespace Jerry
                 bool fi = true;
                 foreach (SubFsm sub in m_SubFsms)
                 {
-                    ret += string.Format("{0}-{1}->{2}\n", GetNodeName(), fi ? "" : ".", sub.GetNodeName());
+                    ret += string.Format("{0}->{1} [style = {2} color = pink];\n", GetNodeName(), sub.GetNodeName(), fi ? "filled" : "dotted");
                     fi = false;
-                    //break;
                 }
             }
             if (m_States != null)

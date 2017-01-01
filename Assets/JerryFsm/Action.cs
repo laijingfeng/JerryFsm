@@ -129,14 +129,9 @@ namespace Jerry
 
         #region Graph
 
-        public string GetNode()
-        {
-            return string.Format("{0}>{1}]", GetNodeName(), this.GetType());
-        }
-
         public string GetNodeName()
         {
-            return string.Format("{0}.{1}", MyState.GetNodeName(), this.GetType());
+            return string.Format("{0}", this.GetType());
         }
 
         #endregion Graph

@@ -4,7 +4,7 @@
 目录 | Unity/AI
 标签 | fsm、状态机、JerryFsm、AI
 备注 | 无
-最近更新 | 2017-01-01 14:09:11
+最近更新 | 2017-01-01 22:45:34
 
 ## 总述
 
@@ -102,7 +102,7 @@
         - OnUpdate() 更新
         - OnDraw()
         - OnDrawSelected()
-        - GetGraph 导出关系图，示例看后面附加
+        - GetGraph 导出关系图
 
 > 备注：数据在AIMgr收集分配，可能存储于Fsm或State，看具体的需求，例如路径：
 > 
@@ -113,84 +113,91 @@
 关系图：
 
 ```
-graph TB
-GameObject
-AIMgr
-Fsm
-SubFsm
-State((State))
-Action
-GameObject---AIMgr
-AIMgr---Fsm
-Fsm-->SubFsm
-Fsm-->State
-SubFsm-->State
-State-->Action
-SubFsm-->SubFsm
-SubFsm-->Action
-Action-.->Action
-State-->|Transition|State
-SubFsm-->|Transition|State
+digraph JerryFsm {
+State[shape = box, color = blue]
+GameObject->AIMgr
+AIMgr->Fsm
+Fsm->SubFsm
+Fsm->State
+SubFsm->SubFsm
+SubFsm->State
+SubFsm->State[label = "Transition"]
+SubFsm->Action
+State->State[label = "Transition"]
+State->Action
+Action->Action
+}
 ```
+
+![image](http://odk2uwdl8.bkt.clouddn.com/2016-07-26-jerry-fsm_00.png)
 
 ## 衍化过程
 
 **最初**
 
 ```
-graph TB
-Fsm
-State1((State1))
-State2((State2))
-Fsm-->State1
-Fsm-.->State2
-State1-->State2
-State2-->State1
+digraph JerryFsm {
+State1[shape = box, color = blue]
+State2[shape = box, color = blue]
+Fsm->State1
+Fsm->State2
+State1->State2
+State2->State1
+}
 ```
+
+![image](http://odk2uwdl8.bkt.clouddn.com/2016-07-26-jerry-fsm_01.png)
 
 **为了丰富和共用State的行为引入Action**
 
 ```
-graph TB
-Fsm
-State1((State1))
-State2((State2))
-Fsm-->State1
-Fsm-.->State2
-State1-->State2
-State2-->State1
-State1-->Action1
-State1-->Action2
+digraph JerryFsm {
+State1[shape = box, color = blue]
+State2[shape = box, color = blue]
+Fsm->State1
+Fsm->State2
+State1->State2
+State2->State1
+State1->Action1
+State1->Action2
+}
 ```
+
+![image](http://odk2uwdl8.bkt.clouddn.com/2016-07-26-jerry-fsm_02.png)
 
 **为了丰富和共用跳转条件引入Trasition**
 
 ```
-graph TB
-Fsm
-State1((State1))
-State2((State2))
-Fsm-->State1
-Fsm-.->State2
-State1-->|Transition1|State2
-State2-->|Transition1|State1
+digraph JerryFsm {
+State1[shape = box, color = blue]
+State2[shape = box, color = blue]
+Fsm->State1
+Fsm->State2
+State1->State2[label = "Transition1"]
+State2->State1[label = "Transition1"]
+}
 ```
+
+![image](http://odk2uwdl8.bkt.clouddn.com/2016-07-26-jerry-fsm_03.png)
 
 **为了可以监管局部引入SubFsm**
 
 ```
-graph TB
-Fsm
-State1((State1))
-State2((State2))
-State3((State3))
-Fsm-->State1
-Fsm-.->SubFsm1
-State1-->State2
-State2-->State1
-SubFsm1-->State2
-SubFsm1-.->State3
+digraph JerryFsm {
+State1[shape = box, color = blue]
+State2[shape = box, color = blue]
+State3[shape = box, color = blue]
+Fsm->State1
+Fsm->State2
+Fsm->SubFsm1
+State1->State2[label = "tr"]
+State2->State1[label = "tr"]
+SubFsm1->State2[label = "tr"]
+SubFsm1->State3
+}
 ```
+
+![image](http://odk2uwdl8.bkt.clouddn.com/2016-07-26-jerry-fsm_04.png)
 
 ## 使用
 
@@ -211,59 +218,11 @@ SubFsm1-.->State3
 
 已经启动的State和Action，Exit一定有执行，也就是Enter和Exit成对，可以保证做必要的清理
 
-## 附录
-
-Graph示例：
-
-```
-graph TB
-MonsterAIMgr_Run[MonsterAIMgr_Run]
-MonsterFsm[MonsterFsm]
-
-2[MonsterState_RunWay]
-
-1[MonsterState_FollowPlayer]
-
-subgraph MonsterState_RunWay
-2
-end
-
-subgraph MonsterState_FollowPlayer
-1
-end
-
-MonsterAIMgr_Run-->MonsterFsm
-MonsterFsm-->2
-2-->|Tr_Run_RunWay2FollowPlay|1
-1-->|Tr_Run_FollowPlay2RunWay|2
-```
-
 ## 样例
 
 ### SubFsmTest
 
-```
-graph TB
-Fsm_Sta1[1]
-Sub1_Sta1[2]
-Sub1_Sta2[3]
-Sub2_Sta1[4]
-Sub2_Sta2[5]
-Fsm-->Fsm_Sta1
-Fsm-.->Sub1
-Sub1-->Sub1_Sta1
-Sub1_Sta1-->Sub1_Sta1_Ac1
-Sub1_Sta1-->Sub1_Sta1_Ac2
-Sub1-->Sub1_Sta2
-Fsm-.->Sub2
-Sub2-->Sub2_Sta1
-Sub2-->Sub2_Sta2
-Fsm_Sta1-.->Sub1_Sta1
-Sub1_Sta1-.->Sub2_Sta2
-Sub2_Sta2-.->Sub1_Sta2
-Sub1_Sta2-.->Sub2_Sta1
-Sub2_Sta1-.->Fsm_Sta1
-```
+![image](http://odk2uwdl8.bkt.clouddn.com/2016-07-26-jerry-fsm_05.png)
 
 ## TODO
 

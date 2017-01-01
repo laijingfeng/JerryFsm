@@ -78,7 +78,7 @@ namespace Jerry
 
         public string GetNode()
         {
-            return string.Format("{0}[{1}]", GetNodeName(), this.GetType());
+            return string.Format("{0}[label = \"{1}\"];\n", GetNodeName(), this.GetType());
         }
 
         public string GetNodeName()
@@ -89,31 +89,26 @@ namespace Jerry
         public string GetNodes()
         {
             string ret = "";
-            ret += string.Format("{0}\n", GetNode());
+            ret += string.Format("{0}", GetNode());
             ret += string.Format("{0}", CurFsm.GetNodes());
             return ret;
-        }
-
-        public string GetSubGraph()
-        {
-            return CurFsm.GetSubGraph();
         }
 
         public string GetLinks()
         {
             string ret = "";
-            ret += string.Format("{0}-->{1}\n", GetNodeName(), CurFsm.GetNodeName());
+            ret += string.Format("{0}->{1};\n", GetNodeName(), CurFsm.GetNodeName());
             ret += CurFsm.GetLinks();
             return ret;
         }
-
+        
         public string GetGraph()
         {
             string ret = "";
-            ret += string.Format("graph TB\n");
+            ret += string.Format("digraph {0} ", GetNodeName()) + "{\n";
             ret += GetNodes();
-            ret += GetSubGraph();
             ret += GetLinks();
+            ret += "}";
             return ret;
         }
 
